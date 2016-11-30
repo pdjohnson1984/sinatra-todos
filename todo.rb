@@ -65,7 +65,7 @@ get '/lists/:id' do
 end
 
 # Change name of list
-post '/lists/:id' do
+post '/edit/:id' do
   @id = params[:id].to_i
   @list = session[:lists][@id]
 
@@ -80,4 +80,14 @@ post '/lists/:id' do
     @list[:name] = new_list_name
     erb :list, layout: :layout
   end
+end
+
+post "/delete/:id" do
+  list = session[:lists][params[:id].to_i]
+
+  session[:lists].delete(list)
+  session[:success] = 'The list has been deleted.'
+
+  @lists = session[:lists]
+  erb :lists, layout: :layout
 end

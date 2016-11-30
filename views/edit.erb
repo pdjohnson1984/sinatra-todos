@@ -1,0 +1,15 @@
+<form action="/lists/<%= @id %>" method="post">
+  <dl>
+    <dt>
+      <label for="list_name">Edit the name of your list:</label>
+    </dt>
+    <dd>
+      <input name="list_name" placeholder="List Name" type="text"
+      value="<%= @name %>" />
+    </dd>
+  </dl>
+  <fieldset class="actions">
+    <input type="submit" value="Save" />
+    <a href="/lists/<%= @id %>">Cancel</a>
+  </fieldset>
+</form>

@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'sinatra/reloader'
+require 'sinatra/content_for'
 require 'tilt/erubis'
 
 configure do
@@ -8,7 +9,7 @@ configure do
 end
 
 before do
-  session[] ||= []
+  session[:lists] ||= []
 end
 
 get '/' do
@@ -47,5 +48,36 @@ post '/lists' do
     session[:lists] << { name: list_name, todos: [] }
     session[:success] = 'The list has been created.'
     redirect '/'
+  end
+end
+
+get '/edit/:id' do
+  @id = params[:id].to_i
+  @list = session[:lists][@id]
+  @name = @list[:name]
+  erb :edit, layout: :layout
+end
+
+get '/lists/:id' do
+  @id = params[:id].to_i
+  @list = session[:lists][@id]
+  erb :list, layout: :layout
+end
+
+# Change name of list
+post '/lists/:id' do
+  @id = params[:id].to_i
+  @list = session[:lists][@id]
+
+  new_list_name = params[:list_name].strip
+
+  error = error_for_listname(new_list_name)
+  if error
+    @name = @list[:name]
+    session[:error] = error
+    erb :edit, layout: :layout
+  else
+    @list[:name] = new_list_name
+    erb :list, layout: :layout
   end
 end

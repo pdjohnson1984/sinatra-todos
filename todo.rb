@@ -67,6 +67,7 @@ end
 get '/lists/:id' do
   @id = params[:id].to_i
   @list = session[:lists][@id]
+  puts @list
   erb :list, layout: :layout
 end
 
@@ -98,6 +99,7 @@ post "/delete/:id" do
   erb :lists, layout: :layout
 end
 
+# Add a new todo to the list
 post "/lists/:id/todos" do
   @id = params[:id].to_i
   @list = session[:lists][@id]
@@ -106,11 +108,31 @@ post "/lists/:id/todos" do
   error = error_for_listname(todo)
   if error
     session[:error] = error
+    erb :list, layout: :layout
   else
-    @list[:todos] << todo
+    @list[:todos] << {name: todo, completed: false}
     session[:success] = 'Todo has been added.'
+    redirect "/lists/#{@id}"
   end
+end
 
+post "/lists/:id/delete_todo/:todo_id" do
+  @id = params[:id].to_i
+  todo_id = params[:todo_id].to_i
+  @list = session[:lists][@id]
+  @list[:todos].delete_at(todo_id)
 
-  erb :list, layout: :layout
+  redirect "/lists/#{@id}"
+end
+
+# Update the status of a todo
+post "/lists/:id/mark_todo/:todo_id" do
+  @id = params[:id].to_i
+  todo_id = params[:todo_id].to_i
+
+  is_completed = params[:completed] == 'true'
+  @list = session[:lists][@id]
+  @list[:todos][todo_id][:completed] = is_completed
+
+  redirect "/lists/#{@id}"
 end

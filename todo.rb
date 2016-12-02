@@ -36,6 +36,12 @@ def error_for_listname(name)
   end
 end
 
+def error_for_todo(name)
+  if !(1..100).cover? name.size
+    'List name must be between 1 and 100 characters.'
+  end
+end
+
 # Create a new list
 post '/lists' do
   list_name = params[:list_name].strip
@@ -90,4 +96,21 @@ post "/delete/:id" do
 
   @lists = session[:lists]
   erb :lists, layout: :layout
+end
+
+post "/lists/:id/todos" do
+  @id = params[:id].to_i
+  @list = session[:lists][@id]
+  todo = params[:todo].strip
+
+  error = error_for_listname(todo)
+  if error
+    session[:error] = error
+  else
+    @list[:todos] << todo
+    session[:success] = 'Todo has been added.'
+  end
+
+
+  erb :list, layout: :layout
 end

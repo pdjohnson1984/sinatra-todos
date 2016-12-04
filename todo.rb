@@ -6,10 +6,15 @@ require 'tilt/erubis'
 configure do
   enable :sessions
   set :session_secret, 'secret'
+  set :erb, :escape_html => true
 end
 
 helpers do
 
+end
+
+not_found do
+  redirect "/lists"
 end
 
 before do
@@ -46,6 +51,14 @@ def error_for_todo(name)
   end
 end
 
+def load_list(index)
+  list = session[:lists][index] if index
+  return list if list
+
+  session[:error] = "The specified list was not found."
+  redirect "/lists"
+end
+
 # Create a new list
 post '/lists' do
   list_name = params[:list_name].strip
@@ -70,7 +83,7 @@ end
 
 get '/lists/:id' do
   @id = params[:id].to_i
-  @list = session[:lists][@id]
+  @list = load_list(@id)
   puts @list
   erb :list, layout: :layout
 end
@@ -78,7 +91,7 @@ end
 # Change name of list
 post '/edit/:id' do
   @id = params[:id].to_i
-  @list = session[:lists][@id]
+  @list = load_list(@id)
 
   new_list_name = params[:list_name].strip
 
@@ -106,7 +119,7 @@ end
 # Add a new todo to the list
 post "/lists/:id/todos" do
   @id = params[:id].to_i
-  @list = session[:lists][@id]
+  @list = load_list(@id)
   todo = params[:todo].strip
 
   error = error_for_listname(todo)
@@ -123,7 +136,7 @@ end
 post "/lists/:id/delete_todo/:todo_id" do
   @id = params[:id].to_i
   todo_id = params[:todo_id].to_i
-  @list = session[:lists][@id]
+  @list = load_list(@id)
   @list[:todos].delete_at(todo_id)
 
   redirect "/lists/#{@id}"
@@ -135,7 +148,7 @@ post "/lists/:id/mark_todo/:todo_id" do
   todo_id = params[:todo_id].to_i
 
   is_completed = params[:completed] == 'true'
-  @list = session[:lists][@id]
+  @list = load_list(@id)
   @list[:todos][todo_id][:completed] = is_completed
 
   session[:success] = 'Todo has been completed.'
@@ -145,7 +158,7 @@ end
 
 post "/lists/:id/complete_all" do
   @id = params[:id].to_i
-  @list = session[:lists][@id]
+  @list = load_list(@id)
   @todos = @list[:todos]
 
   @todos.each do |todo|

@@ -107,13 +107,18 @@ post '/edit/:id' do
 end
 
 post "/delete/:id" do
-  list = session[:lists][params[:id].to_i]
+  @id = params[:id].to_i
+  @list = load_list(@id)
 
-  session[:lists].delete(list)
-  session[:success] = 'The list has been deleted.'
+  session[:lists].delete(@list)
 
-  @lists = session[:lists]
-  erb :lists, layout: :layout
+  if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
+    "/lists"
+  else
+    session[:success] = 'The list has been deleted.'
+    redirect "/lists"
+  end
+  # @lists = session[:lists]
 end
 
 # Add a new todo to the list
@@ -139,7 +144,12 @@ post "/lists/:id/delete_todo/:todo_id" do
   @list = load_list(@id)
   @list[:todos].delete_at(todo_id)
 
-  redirect "/lists/#{@id}"
+  if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
+    status 204
+  else
+    session[:success] = 'Todo has been deleted.'
+    redirect "/lists/#{@id}"
+  end
 end
 
 # Update the status of a todo

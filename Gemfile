@@ -1,11 +1,7 @@
-ruby "2.3.0"
+source "https://rubygems.org"
 
-source 'https://rubygems.org'
+gem "sinatra", "~>1.4.7"
+gem "sinatra-contrib"
+gem "erubis"
 
-gem 'sinatra', '~>1.4.7'
-gem 'sinatra-contrib'
-gem 'erubis'
-
-group :production do
-  gem "puma"
-end
+gem "pg"
